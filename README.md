@@ -1,135 +1,206 @@
 # Centrum
 
-A powerful Python-based control systems development platform that bridges theory and implementation. Centrum provides a flexible, extensible framework for rapid prototyping and deployment of control applications, from simple motor control to complex robotic systems.
+High-performance control systems platform with a C core and Python interface, designed for both rapid prototyping and production deployment. Centrum bridges the gap between development and industrial deployment with deterministic timing, safety features, and industrial protocol support.
 
+[![C Version](https://img.shields.io/badge/C-C11-blue.svg)](https://en.wikipedia.org/wiki/C11_(C_standard_revision))
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## 🎯 Core Features
+## Architecture
 
-- **Real-time Control Loop Implementation**
-  - Configurable sampling rates
-  - Multi-threading support for parallel control loops
-  - Precise timing control
-  
-- **Hardware Interfaces**
-  - Motor driver support (DC, Stepper, BLDC)
-  - Position/velocity sensor integration
-  - Temperature sensor interfaces
-  - Extensible driver architecture
+- **C Core (libcentrum)**
+  - Real-time control loops
+  - Hardware abstraction layer
+  - Industrial protocol implementations
+  - Safety-critical components
+  - Memory management
+  - RTOS integration
 
-- **Control Algorithms**
-  - PID control with anti-windup
-  - State feedback controllers
-  - Feed-forward compensation
-  - Custom controller support
+- **Python Interface**
+  - High-level configuration
+  - System monitoring
+  - Data analysis
+  - Visualization
+  - Rapid prototyping
 
-- **Data Handling**
-  - Real-time data logging
-  - Performance metrics
-  - System identification tools
+## Core Features
 
-## 🚀 Common Applications
+### Industrial-Grade Control
+```c
+// C API for critical control loops
+centrum_controller_t* ctrl = centrum_controller_create();
+centrum_safety_limits_t limits = {
+    .max_velocity = 3000.0,    // RPM
+    .max_current = 10.0,       // Amps
+    .position_limits = {-180.0, 180.0}
+};
+centrum_controller_set_safety(ctrl, &limits);
+```
 
-- Motor position and velocity control
-- Robotic arm manipulation
-- Balance systems (inverted pendulum)
-- Temperature control systems
+### Python Interface for Configuration
+```python
+from centrum import Controller, SafetyLimits
+
+controller = Controller()
+controller.set_safety_limits(
+    max_velocity=3000,  # RPM
+    max_current=10,     # Amps
+    position_limits=(-180, 180)
+)
+```
+
+### Industrial Protocol Support
+- EtherCAT
+- Profinet
+- Modbus TCP/RTU
+- OPC UA
+- CAN/CANopen
+- EtherNet/IP
+
+### Safety Features
+- Emergency stop systems
+- Watchdog timers
+- Redundant sensors
+- Fault detection
+- Error recovery
+- Safety limit enforcement
+- System state validation
+
+### Production Monitoring
+- Real-time performance metrics
+- System health monitoring
+- Predictive maintenance
+- Quality metrics
+- OEE calculations
+- SCADA integration
+
+## Use Cases
+
+### Manufacturing
+- CNC machine control
+- Robot cell coordination
 - Process automation
-- Educational demonstrations
+- Quality control systems
 
-## 🛠️ Installation
+### Motion Control
+- Multi-axis coordination
+- Servo control
+- Precision positioning
+- Synchronization
 
+### Process Control
+- Temperature regulation
+- Flow control
+- Pressure management
+- Chemical processes
+
+## Performance
+
+- < 1μs control loop jitter
+- Deterministic timing
+- Real-time scheduling
+- Memory-efficient design
+- Zero-copy data handling
+- DMA utilization
+
+## Installation
+
+### C Library
+```bash
+git clone https://github.com/centrum/centrum.git
+cd centrum
+mkdir build && cd build
+cmake ..
+make
+sudo make install
+```
+
+### Python Package
 ```bash
 pip install centrum
 ```
 
-## 📖 Quick Start
+## Quick Start
 
-```python
-from centrum.core import PIDController
-from centrum.drivers import DCMotor, Encoder
+### C Implementation
+```c
+#include <centrum.h>
 
-# Initialize hardware
-motor = DCMotor("motor1", pwm_pin=18, dir_pin=23)
-encoder = Encoder("encoder1", pin_a=24, pin_b=25)
-
-# Configure controller
-controller = PIDController(
-    sensor=encoder,
-    actuator=motor,
-    kp=1.0, ki=0.1, kd=0.05,
-    sampling_time=0.01  # 10ms
-)
-
-# Run control loop
-controller.set_target(90.0)  # degrees
-status = controller.step()
+int main() {
+    centrum_config_t config = {
+        .sampling_rate = 1000,  // Hz
+        .priority = CENTRUM_PRIORITY_REALTIME
+    };
+    
+    centrum_controller_t* ctrl = centrum_controller_create(&config);
+    centrum_controller_start(ctrl);
+    
+    // Control loop runs in separate real-time thread
+    while(centrum_controller_is_running(ctrl)) {
+        centrum_process_events(ctrl);
+        centrum_update_monitoring(ctrl);
+    }
+    
+    centrum_controller_destroy(ctrl);
+    return 0;
+}
 ```
 
-## 📊 Example: Motor Position Control
-
+### Python Usage
 ```python
-import time
-from centrum.examples import PositionControl
+from centrum import Controller
 
-# Create position control system
-system = PositionControl(
-    motor_pins={'pwm': 18, 'dir': 23},
-    encoder_pins={'a': 24, 'b': 25}
+controller = Controller(sampling_rate=1000)  # Hz
+controller.configure_industrial_interface(
+    protocol="EtherCAT",
+    device_id=1,
+    cycle_time_us=1000
 )
 
-# Configure and run
-system.set_position(180)  # degrees
-system.run(duration=5.0)  # seconds
+# Start control system
+controller.start()
+
+# Monitor in real-time
+for status in controller.monitor():
+    print(f"Position: {status.position}, Error: {status.error}")
 ```
 
-## 🔧 Requirements
+## Documentation
+- [C API Reference](https://centrum.dev/c-api)
+- [Python API Guide](https://centrum.dev/python-api)
+- [Industrial Integration](https://centrum.dev/industrial)
+- [Safety Guidelines](https://centrum.dev/safety)
+- [Performance Tuning](https://centrum.dev/performance)
 
-- Python 3.8+
-- NumPy
-- RPi.GPIO (for Raspberry Pi implementations)
-- Additional optional dependencies based on usage
+## Building from Source
 
-## 📈 Roadmap
+### Requirements
+- C11 compatible compiler
+- CMake 3.15+
+- Python 3.8+ (for Python interface)
+- Industrial protocol SDKs (optional)
 
-- [ ] Advanced control algorithms (MPC, LQR)
-- [ ] Web-based monitoring interface
-- [ ] Extended hardware support
-- [ ] Real-time visualization tools
-- [ ] System identification module
-- [ ] Simulation environment
+### Build Options
+```bash
+# Full build with all features
+cmake -DCENTRUM_BUILD_ALL=ON ..
 
-## 🤝 Contributing
+# Minimal real-time core
+cmake -DCENTRUM_MINIMAL=ON ..
 
-Contributions are welcome! See our [Contributing Guidelines](CONTRIBUTING.md) for details on:
-- Setting up development environment
-- Code style guidelines
-- Submission process
-- Bug reports and feature requests
+# With specific industrial protocols
+cmake -DCENTRUM_ETHERCAT=ON -DCENTRUM_PROFINET=ON ..
+```
 
-## 📜 License
-
+## License
 This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
 
-## ✨ Project Structure
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
-```
-centrum/
-├── core/                 # Core control system implementations
-├── drivers/              # Hardware interface drivers
-├── algorithms/           # Control algorithms
-├── utils/               # Utility functions and tools
-├── examples/            # Example implementations
-└── tests/               # Test suite
-```
-
-## 📫 Contact & Support
-
-- GitHub Issues: Bug reports and feature requests
-- Discord: [Join our community](https://discord.gg/centrum)
-- Documentation: [Read the Docs](https://centrum.readthedocs.io/)
-
-## 🙏 Acknowledgments
-
-Built with support from the open-source community and control systems enthusiasts worldwide.
+## Commercial Support
+- Implementation consulting
+- Custom protocol integration
+- Safety certification support
+- Training and workshops
+- Production deployment assistance
